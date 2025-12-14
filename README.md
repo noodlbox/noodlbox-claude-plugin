@@ -20,8 +20,7 @@ Connects to the noodlbox MCP server for knowledge graph queries.
 - **Refactoring analysis** - Understand impact before changes
 
 ### Slash Commands
-- `/generate_map` - Generate architecture map with mermaid diagram
-- `/trace_feature` - Trace execution flow from a symbol
+- `/generate_map` - Generate architecture map with mermaid diagram (includes symbol tracing)
 - `/detect_impact_of_current_changes` - Analyze git changes impact
 
 ## Prerequisites

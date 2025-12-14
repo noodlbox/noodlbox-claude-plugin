@@ -34,17 +34,59 @@ This provides:
 - Processes (execution flows)
 - Connections to other communities
 
-## Step 3: Trace Important Processes
+## Step 3: Trace Key Symbols
 
-For high-centrality processes, read the execution trace:
+For high-centrality symbols identified in Steps 1-2, trace their execution flows to understand how they connect the architecture.
 
+### 3.1: Understand Architectural Context
+
+```cypher
+MATCH (cs:CODE_SYMBOL {name: '<symbol_name>'})
+MATCH (cs)-[:PROCESS_STEP]->(p:PROCESS)
+MATCH (p)-[:BELONGS_TO_COMMUNITY]->(c:COMMUNITY)
+RETURN p.name as process, p.centrality as process_importance,
+       c.name as community, c.size as community_size, c.cohesion
 ```
-noodlbox://$ARGUMENTS/process/{process_id}
+
+### 3.2: Find Callers (Upstream)
+
+```cypher
+MATCH (caller:CODE_SYMBOL)-[:CALLS]->(cs:CODE_SYMBOL {name: '<symbol_name>'})
+RETURN caller.name, caller.kind, caller.file_path, caller.centrality
+ORDER BY caller.centrality DESC
+LIMIT 20
 ```
 
-This provides:
-- Step-by-step execution trace with file locations
-- Related processes
+### 3.3: Find Dependencies (Downstream)
+
+```cypher
+MATCH (cs:CODE_SYMBOL {name: '<symbol_name>'})-[:CALLS]->(called:CODE_SYMBOL)
+RETURN called.name, called.kind, called.file_path, called.centrality
+ORDER BY called.centrality DESC
+LIMIT 20
+```
+
+### 3.4: Cross-Community Dependencies
+
+```cypher
+MATCH (caller:CODE_SYMBOL)-[:CALLS]->(cs:CODE_SYMBOL {name: '<symbol_name>'})
+MATCH (caller)-[:PROCESS_STEP]->()-[:BELONGS_TO_COMMUNITY]->(c1:COMMUNITY)
+MATCH (cs)-[:PROCESS_STEP]->()-[:BELONGS_TO_COMMUNITY]->(c2:COMMUNITY)
+WHERE c1 <> c2
+RETURN c1.name as calling_from, c2.name as called_in, count(*) as calls
+```
+
+### 3.5: Multi-Hop Trace (2-3 levels)
+
+```cypher
+MATCH path = (cs:CODE_SYMBOL {name: '<symbol_name>'})-[:CALLS*1..3]->(dep:CODE_SYMBOL)
+WHERE dep.centrality > 0.5
+RETURN dep.name, dep.file_path, length(path) as depth, dep.centrality
+ORDER BY dep.centrality DESC
+LIMIT 20
+```
+
+Repeat for each key symbol to build a complete picture of the architecture.
 
 ## Step 4: Write Architecture Document
 
@@ -70,6 +112,17 @@ Create `ARCHITECTURE.md` in the repository root with this structure:
 - **Cohesion**: X.XX
 
 [Repeat for each major community]
+
+## Key Execution Flows
+
+### [Symbol Name]
+- **Location**: `file_path:line`
+- **Centrality**: X.XX
+- **Callers**: [List of upstream callers]
+- **Dependencies**: [List of downstream calls]
+- **Cross-Community Impact**: [Which modules this connects]
+
+[Repeat for key symbols traced in Step 3]
 
 ## Data Flows
 

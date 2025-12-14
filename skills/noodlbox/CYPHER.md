@@ -2,24 +2,20 @@
 
 Reference for common Noodlbox knowledge graph queries using `noodlbox_raw_cypher_query`.
 
-## Schema Overview
+## Schema Reference
 
-### Node Types
-- `CODE_SYMBOL`: Functions, classes, methods, variables
-- `FILE`: Source files
-- `REPOSITORY`: Analyzed repositories
+**Before writing Cypher queries**, read the database schema resource to understand available node types, relationship types, and properties:
 
-### Relationship Types
-- `CALLS`: Symbol calls another symbol
-- `CONTAINS`: File contains symbol
-- `BELONGS_TO`: Symbol belongs to repository
+```
+db://schema/{repository}
+```
 
-### Key Properties
-- `name`: Symbol/file name
-- `kind`: Symbol type (function, class, method, etc.)
-- `file_path`: Full path to file
-- `community_id`: Leiden community cluster ID
-- `start_line`, `end_line`: Line numbers
+This returns the actual schema for the repository including:
+- All node tables and their properties
+- All relationship tables and their connectivity
+- Property types and primary keys
+
+The schema is dynamic and may vary between repositories. Always check the schema resource rather than assuming fixed types.
 
 ---
 
